@@ -8,18 +8,14 @@
         name: '*'
         state: latest
 
-    - name: Install Node.js and npm
+    - name: Install dependencies
       yum:
         name:
           - nodejs
           - npm
+          - nginx
         state: present
         enablerepo: epel
-
-    - name: Install Nginx
-      yum:
-        name: nginx
-        state: present
 
     - name: Configure Nginx to proxy traffic to Node.js
       copy:
