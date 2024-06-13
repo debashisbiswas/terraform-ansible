@@ -1,0 +1,80 @@
+---
+- name: Configure Node.js server
+  hosts: all
+  become: yes
+  tasks:
+    - name: Update the system
+      yum:
+        name: '*'
+        state: latest
+
+    - name: Install Node.js and npm
+      yum:
+        name:
+          - nodejs
+          - npm
+        state: present
+        enablerepo: epel
+
+    - name: Install Nginx
+      yum:
+        name: nginx
+        state: present
+
+    - name: Configure Nginx to proxy traffic to Node.js
+      copy:
+        src: ./nginx.conf
+        dest: /etc/nginx/nginx.conf
+      notify: restart nginx
+
+    - name: Start and enable Nginx
+      systemd:
+        name: nginx
+        state: started
+        enabled: yes
+
+    - name: Create application directory
+      file:
+        path: /var/www/nodeapp
+        state: directory
+        owner: ec2-user
+        group: ec2-user
+
+    - name: Copy application files
+      copy:
+        src: ./nodeapp/
+        dest: /var/www/nodeapp/
+        owner: ec2-user
+        group: ec2-user
+        mode: '0755'
+
+    - name: Create a systemd service for the Node.js app
+      copy:
+        dest: /etc/systemd/system/nodeapp.service
+        content: |
+          [Unit]
+          Description=Node.js Example App
+
+          [Service]
+          ExecStart=/usr/bin/node /var/www/nodeapp
+          Restart=always
+          User=ec2-user
+          Group=ec2-user
+          Environment=PATH=/usr/bin:/usr/local/bin
+          Environment=NODE_ENV=production
+          WorkingDirectory=/var/www/nodeapp
+
+          [Install]
+          WantedBy=multi-user.target
+
+    - name: Start and enable Node.js app service
+      systemd:
+        name: nodeapp
+        state: started
+        enabled: yes
+
+  handlers:
+    - name: restart nginx
+      systemd:
+        name: nginx
+        state: restarted
