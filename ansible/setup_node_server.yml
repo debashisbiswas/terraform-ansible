@@ -45,22 +45,8 @@
 
     - name: Create a systemd service for the Node.js app
       copy:
+        src: ./nodeapp.service
         dest: /etc/systemd/system/nodeapp.service
-        content: |
-          [Unit]
-          Description=Node.js Example App
-
-          [Service]
-          ExecStart=/usr/bin/node /var/www/nodeapp
-          Restart=always
-          User=ec2-user
-          Group=ec2-user
-          Environment=PATH=/usr/bin:/usr/local/bin
-          Environment=NODE_ENV=production
-          WorkingDirectory=/var/www/nodeapp
-
-          [Install]
-          WantedBy=multi-user.target
 
     - name: Start and enable Node.js app service
       systemd:
