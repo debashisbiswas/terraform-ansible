@@ -12,8 +12,12 @@ fi
 echo "Giving time for instance to be ready..."
 sleep 5
 
-ansible-playbook -i "$INSTANCE_IP," -u ec2-user --private-key ~/.ssh/id_rsa ./ansible/setup_node_server.yml \
-  --ssh-extra-args="-o StrictHostKeyChecking=no"
+ANSIBLE_CONFIG=./ansible/ansible.cfg ansible-playbook \
+  -i "$INSTANCE_IP," \
+  -u ec2-user \
+  ./ansible/setup_node_server.yml \
+  --private-key ~/.ssh/id_rsa \
+  -vv
 
 if [ $? -eq 0 ]; then
   echo "Ansible playbook ran successfully. Instance IP: $INSTANCE_IP"
